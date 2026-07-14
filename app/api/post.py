@@ -6,11 +6,18 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.db.database import get_db
+from app.schemas.place import PlaceSearchItem
 from app.schemas.post import PostCreateResponse, PostDeleteRequest, PostDetailResponse, PostImageItem, PostListItem, PostListResponse
 from app.services.post_service import create_post, delete_post, get_post, get_post_image, list_posts, update_post
+from app.services.place_service import search_places
 
 
 router = APIRouter(prefix="/posts", tags=["posts"])
+
+
+@router.get("/search", response_model=list[PlaceSearchItem])
+def search(keyword: str | None = None, db: Session = Depends(get_db)):
+    return search_places(db, keyword or "")
 
 
 def _detail(post) -> PostDetailResponse:
