@@ -2,13 +2,31 @@
 
 부산 관광 장소 데이터를 검색하고, 그 검색 결과에 근거한 챗봇 응답을 제공합니다.
 
+
+
+
 ## 실행
 
+만약 .venv 가상환경이 없다면
+
+```powershell
+python3 -m venv .venv
+
+# 활성화
+
+source .venv/bin/activate
+
+# install
+pip install -r requirements.txt
+
+```
+
+# 실행
 ```powershell
 python -m uvicorn app.main:app --reload
 ```
 
-OpenAI 응답을 사용하려면 `.env.example`을 복사해 `.env`를 만들고 API 키를 설정합니다.
+OpenAI 응답을 사용하려면ㄴ `.env`를 만들고 API 키를 설정합니다.
 키가 없어도 질문의 지역·카테고리를 추출하고 SQLite 검색 결과를 그대로 반환합니다.
 
 ## API
