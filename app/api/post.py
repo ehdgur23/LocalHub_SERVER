@@ -7,8 +7,8 @@ from typing import List
 
 from app.db.database import get_db
 from app.schemas.place import PlaceSearchItem
-from app.schemas.post import PostCreateResponse, PostDeleteRequest, PostDetailResponse, PostImageItem, PostListItem, PostListResponse
-from app.services.post_service import create_post, delete_post, get_post, get_post_image, list_posts, update_post
+from app.schemas.post import PostCreateResponse, PostDetailResponse, PostImageItem, PostListItem, PostListResponse, PostPasswordVerifyRequest, PostPasswordVerifyResponse
+from app.services.post_service import create_post, delete_post, get_post, get_post_image, list_posts, update_post, verify_post_password
 from app.services.place_service import search_places
 
 
@@ -76,11 +76,17 @@ def read(post_id: int, db: Session = Depends(get_db)):
     return _detail(get_post(db, post_id))
 
 
+@router.post("/{post_id}/verify-password", response_model=PostPasswordVerifyResponse)
+def verify_password(post_id: int, payload: PostPasswordVerifyRequest, db: Session = Depends(get_db)):
+    verify_post_password(db, post_id, payload.password)
+    return PostPasswordVerifyResponse(verified=True)
+
+
 @router.put("/{post_id}", response_model=PostDetailResponse)
-async def update(post_id: int, password: str = Form(...), title: str = Form(...), content: str = Form(...), rating: int | None = Form(default=None, ge=1, le=5), images: List[UploadFile] = File(default=[]), db: Session = Depends(get_db)):
-    return _detail(await update_post(db, post_id, password, title, content, images, rating=rating))
+async def update(post_id: int, title: str = Form(...), content: str = Form(...), rating: int | None = Form(default=None, ge=1, le=5), images: List[UploadFile] = File(default=[]), db: Session = Depends(get_db)):
+    return _detail(await update_post(db, post_id, title, content, images, rating=rating))
 
 
 @router.delete("/{post_id}", status_code=204)
-def delete(post_id: int, payload: PostDeleteRequest, db: Session = Depends(get_db)):
-    delete_post(db, post_id, payload.password)
+def delete(post_id: int, db: Session = Depends(get_db)):
+    delete_post(db, post_id)

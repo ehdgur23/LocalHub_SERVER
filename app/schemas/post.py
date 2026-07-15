@@ -37,5 +37,9 @@ class PostDetailResponse(BaseModel):
     images: list[PostImageItem]
 
 
-class PostDeleteRequest(BaseModel):
+class PostPasswordVerifyRequest(BaseModel):
     password: str = Field(min_length=1)
+
+
+class PostPasswordVerifyResponse(BaseModel):
+    verified: bool
