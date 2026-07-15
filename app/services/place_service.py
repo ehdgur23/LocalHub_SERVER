@@ -33,3 +33,43 @@ def search_places(db: Session, keyword: str, limit: int = 20) -> list[dict]:
         }
         for place in places
     ]
+
+
+def list_places_by_category(db: Session, content_type_id: int, page: int = 1, page_size: int = 4) -> dict:
+    if content_type_id is None:
+        return {
+            "contentTypeId": 0,
+            "page": page,
+            "page_size": page_size,
+            "total": 0,
+            "total_pages": 0,
+            "items": [],
+        }
+
+    query = db.query(Place).filter(Place.content_type_id == content_type_id)
+    total = query.count()
+    total_pages = (total + page_size - 1) // page_size if total else 0
+
+    offset = (page - 1) * page_size
+    places = query.order_by(Place.title.asc()).offset(offset).limit(page_size).all()
+
+    items = [
+        {
+            "id": place.id,
+            "content_id": place.content_id,
+            "title": place.title,
+            "address": " ".join(part for part in (place.addr1, place.addr2) if part),
+            "contentTypeId": place.content_type_id,
+            "category": place.content_type,
+        }
+        for place in places
+    ]
+
+    return {
+        "contentTypeId": content_type_id,
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "total_pages": total_pages,
+        "items": items,
+    }
