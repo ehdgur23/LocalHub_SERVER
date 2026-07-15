@@ -50,10 +50,13 @@ async def create_post(db: Session, place_id: int, nickname: str, password: str, 
     _validate_text(nickname, password, title, content)
     _validate_rating(rating)
     repository = PostRepository(db)
-    if repository.get_place(place_id) is None:
+    place = repository.get_place(place_id)
+    if place is None:
         raise _not_found("존재하지 않는 장소입니다.")
     post = Post(place_id=place_id, nickname=nickname.strip(), password=password, title=title.strip(), content=content.strip(), rating=rating, images=await _build_images(images))
-    return repository.save(post)
+    saved_post = repository.save(post)
+    repository.update_place_review_stats(place)
+    return saved_post
 
 
 def list_posts(db: Session, place_id: int | None) -> list[Post]:
@@ -95,9 +98,16 @@ async def update_post(db: Session, post_id: int, title: str, content: str, image
     if images:
         post.images.clear()
         post.images.extend(await _build_images(images))
-    return PostRepository(db).save(post)
+    repository = PostRepository(db)
+    updated_post = repository.save(post)
+    repository.update_place_review_stats(repository.get_place(post.place_id))
+    return updated_post
 
 
 def delete_post(db: Session, post_id: int) -> None:
+    repository = PostRepository(db)
     post = get_post(db, post_id)
-    PostRepository(db).delete(post)
+    place = repository.get_place(post.place_id)
+    repository.delete(post)
+    if place is not None:
+        repository.update_place_review_stats(place)

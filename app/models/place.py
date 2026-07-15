@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
 
 from app.db.database import Base
 
@@ -37,5 +37,7 @@ class Place(Base):
     created_time = Column(String(14))
     modified_time = Column(String(14))
     raw_data = Column(Text)
+    avg_rating = Column(Float, nullable=False, default=0.0)
+    post_cnt = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

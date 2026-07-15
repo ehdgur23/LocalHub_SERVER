@@ -60,6 +60,21 @@ def _ensure_festival_columns() -> None:
                 continue
             connection.execute(text(f"ALTER TABLE festivals ADD COLUMN {column_name} {column_type}"))
 
+    _ensure_place_review_columns()
+
+
+def _ensure_place_review_columns() -> None:
+    inspector = inspect(engine)
+    if "places" not in inspector.get_table_names():
+        return
+
+    existing_columns = {column["name"] for column in inspector.get_columns("places")}
+    with engine.begin() as connection:
+        if "avg_rating" not in existing_columns:
+            connection.execute(text("ALTER TABLE places ADD COLUMN avg_rating REAL NOT NULL DEFAULT 0.0"))
+        if "post_cnt" not in existing_columns:
+            connection.execute(text("ALTER TABLE places ADD COLUMN post_cnt INTEGER NOT NULL DEFAULT 0"))
+
 
 def _migrate_empty_legacy_post_tables() -> None:
     """Replace only empty tables created by the old file-path post implementation."""

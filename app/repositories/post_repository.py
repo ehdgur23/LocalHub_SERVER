@@ -1,3 +1,4 @@
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.place import Place
@@ -32,4 +33,15 @@ class PostRepository:
 
     def delete(self, post: Post) -> None:
         self.db.delete(post)
+        self.db.commit()
+
+    def update_place_review_stats(self, place: Place) -> None:
+        post_count = self.db.query(Post).filter(Post.place_id == place.id).count()
+        avg_rating = (
+            self.db.query(func.avg(Post.rating)).filter(Post.place_id == place.id).scalar()
+            or 0.0
+        )
+        place.post_cnt = post_count
+        place.avg_rating = round(float(avg_rating), 2)
+        self.db.add(place)
         self.db.commit()
